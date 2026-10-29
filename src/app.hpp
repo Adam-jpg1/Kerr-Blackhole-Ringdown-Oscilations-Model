@@ -32,6 +32,6 @@ Ringdown simulate(const AppState& s);
 
 enum class View { Full, Plot };
 
-std::string renderApp(const AppState& s, View view, const std::string& fontDir);
+std::string renderApp(const AppState& s, View view);
 
 }  // namespace kerr

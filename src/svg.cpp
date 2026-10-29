@@ -3,8 +3,6 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
-#include <fstream>
-#include <iterator>
 
 namespace kerr {
 
@@ -80,7 +78,7 @@ std::string base64(const std::string& data) {
     return out;
 }
 
-const char* kFontFamily = "'IBM Plex Mono', 'Courier New', monospace";
+const char* kFontFamily = "'Times New Roman', Times, serif";
 
 }  // namespace
 
@@ -237,12 +235,26 @@ void Svg::strokeRectInset(double x, double y, double w, double h, const std::str
 }
 
 void Svg::text(const std::string& s, double x, double baseline, double size, int weight,
-               const std::string& color, double letterSpacing) {
+               const std::string& color, const std::string& anchor, double letterSpacing) {
     body_ << "<text x=\"" << fmtNum(x) << "\" y=\"" << fmtNum(baseline) << "\" font-family=\""
           << kFontFamily << "\" font-size=\"" << fmtNum(size) << "\"";
     if (weight != 400) body_ << " font-weight=\"" << weight << "\"";
+    if (anchor != "start") body_ << " text-anchor=\"" << anchor << "\"";
     if (letterSpacing != 0) body_ << " letter-spacing=\"" << fmtNum(letterSpacing) << "\"";
     body_ << paint("fill", color) << " xml:space=\"preserve\">" << escapeXml(s) << "</text>\n";
+}
+
+void Svg::textWithUnit(const std::string& value, const std::string& unit, double x, double baseline,
+                       double size, double unitSize, const std::string& color,
+                       const std::string& anchor) {
+    body_ << "<text x=\"" << fmtNum(x) << "\" y=\"" << fmtNum(baseline) << "\" font-family=\""
+          << kFontFamily << "\" font-size=\"" << fmtNum(size) << "\" font-weight=\"600\"";
+    if (anchor != "start") body_ << " text-anchor=\"" << anchor << "\"";
+    body_ << paint("fill", color) << ">" << escapeXml(value);
+    if (!unit.empty())
+        body_ << "<tspan dx=\"3\" font-size=\"" << fmtNum(unitSize) << "\" font-weight=\"400\">"
+              << escapeXml(unit) << "</tspan>";
+    body_ << "</text>\n";
 }
 
 void Svg::circleGlow(double cx, double cy, double r, const std::string& color, double blur) {
@@ -262,38 +274,6 @@ void Svg::image(const std::string& dataUri, double x, double y, double w, double
           << "\"/>\n";
 }
 
-void Svg::embedFonts(const std::string& fontDir) {
-    struct Face {
-        const char* file;
-        int weight;
-        const char* range;
-    };
-    static const Face faces[] = {
-        {"ibm-plex-mono-latin-ext-400-normal.woff2", 400,
-         "U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,"
-         "U+2113,U+2C60-2C7F,U+A720-A7FF"},
-        {"ibm-plex-mono-latin-400-normal.woff2", 400,
-         "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,"
-         "U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"},
-        {"ibm-plex-mono-latin-ext-600-normal.woff2", 600,
-         "U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,"
-         "U+2113,U+2C60-2C7F,U+A720-A7FF"},
-        {"ibm-plex-mono-latin-600-normal.woff2", 600,
-         "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,"
-         "U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"},
-    };
-    std::ostringstream css;
-    for (const Face& f : faces) {
-        std::ifstream in(fontDir + "/" + f.file, std::ios::binary);
-        if (!in) continue;
-        std::string data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-        css << "@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:" << f.weight
-            << ";src:url(data:font/woff2;base64," << base64(data) << ") format('woff2');unicode-range:"
-            << f.range << ";}\n";
-    }
-    fontCss_ = css.str();
-}
-
 std::string Svg::str(const std::string& viewBox) const {
     std::ostringstream out;
     const std::string vb = viewBox.empty() ? "0 0 " + fmtNum(width_) + " " + fmtNum(height_) : viewBox;
@@ -301,7 +281,6 @@ std::string Svg::str(const std::string& viewBox) const {
     if (!viewBox.empty()) std::sscanf(viewBox.c_str(), "%*f %*f %lf %lf", &vw, &vh);
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" << fmtNum(vw) << "\" height=\""
         << fmtNum(vh) << "\" viewBox=\"" << vb << "\">\n";
-    if (!fontCss_.empty()) out << "<style>\n" << fontCss_ << "</style>\n";
     out << "<defs>\n" << defs_.str() << "</defs>\n" << body_.str() << "</svg>\n";
     return out.str();
 }

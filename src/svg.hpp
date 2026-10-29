@@ -51,11 +51,14 @@ public:
     void strokeRectInset(double x, double y, double w, double h, const std::string& color,
                          double radius = 0);
     void text(const std::string& s, double x, double baseline, double size, int weight,
-              const std::string& color, double letterSpacing = 0);
+              const std::string& color, const std::string& anchor = "start", double letterSpacing = 0);
+    // value followed by a smaller unit, e.g. "250.4 Hz"
+    void textWithUnit(const std::string& value, const std::string& unit, double x, double baseline,
+                      double size, double unitSize, const std::string& color,
+                      const std::string& anchor = "start");
     void circleGlow(double cx, double cy, double r, const std::string& color, double blur);
     void image(const std::string& dataUri, double x, double y, double w, double h);
 
-    void embedFonts(const std::string& fontDir);
 
     std::string str(const std::string& viewBox = "") const;
 
@@ -74,7 +77,6 @@ private:
     double width_, height_;
     std::ostringstream body_;
     std::ostringstream defs_;
-    std::string fontCss_;
     std::vector<double> dash_;
     std::string path_;
     std::string transform_;

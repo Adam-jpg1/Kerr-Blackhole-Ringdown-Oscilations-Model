@@ -26,7 +26,7 @@ void font(Svg& c, double px, const char* align) {
 
 void yAxisTitle(Svg& c, double H, const std::string& title) {
     c.save();
-    c.translate(10, H / 2);
+    c.translate(14, H / 2);
     c.rotate(-kPi / 2);
     c.fillText(title, 0, 0);
     c.restore();
@@ -38,7 +38,7 @@ void yAxisTitle(Svg& c, double H, const std::string& title) {
 
 void drawWaveform(Svg& c, double W, double H, const Ringdown& d, double zoom) {
     background(c, W, H);
-    const double PL = 56, PR = 16, PT = 20, PB = 32;
+    const double PL = 56, PR = 16, PT = 20, PB = 40;
     const double cw = W - PL - PR, ch = H - PT - PB;
     const auto& strain = d.strain;
     const int total = static_cast<int>(strain.size());
@@ -82,9 +82,9 @@ void drawWaveform(Svg& c, double W, double H, const Ringdown& d, double zoom) {
         c.setLineDash({2, 4});
         c.beginPath(); c.moveTo(mx, PT); c.lineTo(mx, PT + ch); c.stroke();
         c.setLineDash({});
-        c.fillStyle = "#ffffff20";
-        font(c, 9, "center");
-        c.fillText("MERGER", mx, PT + 10);
+        c.fillStyle = theme::white;
+        font(c, 12, "center");
+        c.fillText("merger", mx, PT + 12);
     }
 
     // glow pass then main line
@@ -111,12 +111,12 @@ void drawWaveform(Svg& c, double W, double H, const Ringdown& d, double zoom) {
     c.stroke();
 
     // Axes
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
     for (int i = 0; i <= 6; ++i) {
         const int idx = viewStart + static_cast<int>(std::floor((i / 6.0) * viewN));
         const double tMs = d.times[std::min(idx, total - 1)] * 1000;
-        c.fillText(toFixed(tMs, 1), PL + (i / 6.0) * cw, H - 6);
+        c.fillText(toFixed(tMs, 1), PL + (i / 6.0) * cw, H - 22);
     }
     c.textAlign = "right";
     const double absMax = std::fabs(yMax) != 0 ? std::fabs(yMax) : 1;
@@ -127,9 +127,9 @@ void drawWaveform(Svg& c, double W, double H, const Ringdown& d, double zoom) {
         c.fillText(toFixed(v / std::pow(10.0, exp10), 1), PL - 3, y + 3);
     }
 
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
-    c.fillText("time (ms)", W / 2, H - 1);
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
+    c.fillText("time (ms)", W / 2, H - 5);
     const int exp10Title = static_cast<int>(std::floor(std::log10(yMax != 0 ? yMax : 1)));
     yAxisTitle(c, H, "h(t) ×10^" + std::to_string(exp10Title));
 }
@@ -138,7 +138,7 @@ void drawWaveform(Svg& c, double W, double H, const Ringdown& d, double zoom) {
 
 void drawSpectrogram(Svg& c, double W, double H, const Ringdown& d) {
     background(c, W, H);
-    const double PL = 56, PR = 16, PT = 16, PB = 32;
+    const double PL = 56, PR = 16, PT = 16, PB = 40;
     const double cw = W - PL - PR, ch = H - PT - PB;
 
     const Spectrogram sg = spectrogram(d.strain, d.sampleRate, 256, 24);
@@ -205,24 +205,24 @@ void drawSpectrogram(Svg& c, double W, double H, const Ringdown& d) {
         c.setLineDash({4, 4});
         c.beginPath(); c.moveTo(PL, yQ); c.lineTo(PL + cw, yQ); c.stroke();
         c.setLineDash({});
-        c.fillStyle = theme::cyan;
-        font(c, 8, "right");
+        c.fillStyle = theme::white;
+        font(c, 11, "right");
         c.fillText("f₀=" + toFixed(f0, 1) + "Hz", PL + cw - 2, yQ - 3);
     }
 
     // Axes
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
     const double ticks[] = {tMin, (tMin + tMax) / 2, tMax};
-    for (int i = 0; i < 3; ++i) c.fillText(toFixed(ticks[i], 1), PL + (i / 2.0) * cw, H - 4);
+    for (int i = 0; i < 3; ++i) c.fillText(toFixed(ticks[i], 1), PL + (i / 2.0) * cw, H - 22);
     c.textAlign = "right";
     for (double f : {fMin, 50.0, 100.0, 200.0, 500.0, 1000.0, fMax}) {
         if (f < fMin || f > fMax) continue;
         c.fillText(jsNumber(f), PL - 3, PT + yFrac(f) * ch + 3);
     }
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
-    c.fillText("time (ms)", W / 2, H - 1);
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
+    c.fillText("time (ms)", W / 2, H - 5);
     yAxisTitle(c, H, "frequency (Hz, log)");
 }
 
@@ -230,7 +230,7 @@ void drawSpectrogram(Svg& c, double W, double H, const Ringdown& d) {
 
 void drawPowerSpectrum(Svg& c, double W, double H, const Ringdown& d) {
     background(c, W, H);
-    const double PL = 56, PR = 16, PT = 16, PB = 32;
+    const double PL = 56, PR = 16, PT = 16, PB = 40;
     const double cw = W - PL - PR, ch = H - PT - PB;
     const Spectrum ps = powerSpectrum(d.strain, d.sampleRate);
 
@@ -281,6 +281,7 @@ void drawPowerSpectrum(Svg& c, double W, double H, const Ringdown& d) {
     const Marker markers[] = {{&d.qnm0, "f₀ (2,2,0)", theme::cyan},
                               {&d.qnm1, "f₁ (2,2,1)", theme::amber2},
                               {&d.qnm33, "f₃₃", theme::green}};
+    int row = 0;
     for (const Marker& m : markers) {
         const double f = m.q->f_Hz;
         if (f < fMin || f > fMax) continue;
@@ -290,20 +291,22 @@ void drawPowerSpectrum(Svg& c, double W, double H, const Ringdown& d) {
         c.setLineDash({3, 5});
         c.beginPath(); c.moveTo(x, PT); c.lineTo(x, PT + ch); c.stroke();
         c.setLineDash({});
-        c.fillStyle = m.color;
-        font(c, 8, "center");
-        c.fillText(m.label, x, PT + 10);
-        c.fillText(toFixed(f, 1) + "Hz", x, PT + 20);
+        c.fillStyle = theme::white;
+        font(c, 11, "center");
+        // stagger labels so neighbouring modes don't overlap
+        const double ly = PT + 12 + (row++ % 2) * 34;
+        c.fillText(m.label, x, ly);
+        c.fillText(toFixed(f, 1) + " Hz", x, ly + 14);
     }
 
     // Axes
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
     for (double f : {20.0, 50.0, 100.0, 200.0, 500.0, 1000.0}) {
         if (f < fMin || f > fMax) continue;
-        c.fillText(jsNumber(f), toX(f), H - 4);
+        c.fillText(jsNumber(f), toX(f), H - 22);
     }
-    c.fillText("frequency (Hz)", W / 2, H - 1);
+    c.fillText("frequency (Hz)", W / 2, H - 5);
     yAxisTitle(c, H, "|H(f)|");
 }
 
@@ -311,7 +314,7 @@ void drawPowerSpectrum(Svg& c, double W, double H, const Ringdown& d) {
 
 void drawKerrDiagram(Svg& c, double W, double H, double massSolar, double spin) {
     background(c, W, H);
-    const double PL = 56, PR = 16, PT = 24, PB = 36;
+    const double PL = 56, PR = 44, PT = 24, PB = 40;
     const double cw = W - PL - PR, ch = H - PT - PB;
 
     const double masses[] = {10, 30, 68.5, 100, 200};
@@ -341,8 +344,8 @@ void drawKerrDiagram(Svg& c, double W, double H, double massSolar, double spin) 
             if (i == 0) c.moveTo(x, y); else c.lineTo(x, y);
         }
         c.stroke();
-        c.fillStyle = colors[mi];
-        font(c, 8, "left");
+        c.fillStyle = theme::white;
+        font(c, 11, "left");
         c.fillText(jsNumber(masses[mi]) + "M☉", PL + cw + 2, toY(kerrQNM(masses[mi], 0.98, 0).f_Hz) + 3);
     }
 
@@ -359,29 +362,29 @@ void drawKerrDiagram(Svg& c, double W, double H, double massSolar, double spin) 
     c.beginPath(); c.moveTo(PL, cy); c.lineTo(cx, cy); c.stroke();
     c.beginPath(); c.moveTo(cx, PT + ch); c.lineTo(cx, cy); c.stroke();
     c.setLineDash({});
-    c.fillStyle = theme::textBright;
-    font(c, 9, "left");
+    c.fillStyle = theme::white;
+    font(c, 12, "left");
     c.fillText(toFixed(f, 1) + " Hz", cx + 6, cy - 4);
 
     // Axes and title
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
-    for (double a : spinTicks) c.fillText(toFixed(a, 2), toX(a), H - 6);
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
+    for (double a : spinTicks) c.fillText(toFixed(a, 2), toX(a), H - 22);
     c.textAlign = "right";
     for (double fy : {fMinAll, (fMinAll + fMaxAll) / 2, fMaxAll}) c.fillText(toFixed(fy, 0), PL - 3, toY(fy) + 3);
     c.textAlign = "center";
-    c.fillText("dimensionless spin χ", W / 2, H - 1);
+    c.fillText("dimensionless spin χ", W / 2, H - 5);
     yAxisTitle(c, H, "f_QNM (Hz)");
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
-    c.fillText("QNM frequency vs. spin — l=m=2, n=0", W / 2, 12);
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
+    c.fillText("QNM frequency vs. spin (l=m=2, n=0)", W / 2, 15);
 }
 
 // detector view
 
 void drawDetectorView(Svg& c, double W, double H, const Ringdown& d, double sens) {
     background(c, W, H);
-    const double PL = 60, PR = 16, PT = 16, PB = 32;
+    const double PL = 60, PR = 16, PT = 16, PB = 40;
     const double cw = W - PL - PR, ch = H - PT - PB;
     const double fMin = 10, fMax = 2000;
     const double fLo = std::log10(fMin), fHi = std::log10(fMax);
@@ -401,9 +404,9 @@ void drawDetectorView(Svg& c, double W, double H, const Ringdown& d, double sens
     c.lineWidth = 0.5;
     for (double f : {20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0}) {
         c.beginPath(); c.moveTo(toX(f), PT); c.lineTo(toX(f), PT + ch); c.stroke();
-        c.fillStyle = theme::muted;
-        font(c, 8, "center");
-        c.fillText(jsNumber(f), toX(f), H - 4);
+        c.fillStyle = theme::white;
+        font(c, 11, "center");
+        c.fillText(jsNumber(f), toX(f), H - 22);
     }
 
     // rough aLIGO noise curve
@@ -437,17 +440,22 @@ void drawDetectorView(Svg& c, double W, double H, const Ringdown& d, double sens
     c.stroke();
     c.shadowBlur = 0;
 
-    c.fillStyle = theme::textBright;
-    font(c, 9, "left");
-    c.fillText("Signal (h(t))", PL + 8, PT + 14);
-    c.fillStyle = theme::amber2;
-    c.fillText("aLIGO noise floor", PL + 8, PT + 26);
-    c.fillStyle = theme::muted;
-    c.fillText("SNR ratio: " + toFixed(sens, 1) + "×", PL + 8, PT + 38);
+    c.lineWidth = 1.5;
+    c.strokeStyle = theme::cyan;
+    c.beginPath(); c.moveTo(PL + 8, PT + 14); c.lineTo(PL + 28, PT + 14); c.stroke();
+    c.strokeStyle = alpha(theme::amber, "90");
+    c.setLineDash({4, 6});
+    c.beginPath(); c.moveTo(PL + 8, PT + 32); c.lineTo(PL + 28, PT + 32); c.stroke();
+    c.setLineDash({});
+    c.fillStyle = theme::white;
+    font(c, 12, "left");
+    c.fillText("signal", PL + 36, PT + 18);
+    c.fillText("aLIGO noise", PL + 36, PT + 36);
+    c.fillText("SNR " + toFixed(sens, 1), PL + 8, PT + 56);
 
-    c.fillStyle = theme::mutedText;
-    font(c, 9, "center");
-    c.fillText("frequency (Hz, log)", W / 2, H - 1);
+    c.fillStyle = theme::white;
+    font(c, 12, "center");
+    c.fillText("frequency (Hz, log)", W / 2, H - 5);
     yAxisTitle(c, H, "strain amplitude");
 }
 

@@ -41,23 +41,8 @@ void usage() {
         "  --snr X               detector SNR for the detector view\n"
         "  --zoom X              time zoom for the waveform view\n"
         "  --seed N              noise seed (default 1)\n"
-        "  --fonts DIR           folder with the IBM Plex Mono .woff2 files\n"
         "  --report              print the QNM mode table\n"
         "  --csv FILE            export t (s) and h(t) as CSV");
-}
-
-std::string findFontDir(const std::string& requested, const char* argv0) {
-    std::vector<fs::path> candidates;
-    if (!requested.empty()) candidates.emplace_back(requested);
-    candidates.emplace_back("fonts");
-    candidates.emplace_back("../fonts");
-    const fs::path exeDir = fs::absolute(argv0).parent_path();
-    candidates.push_back(exeDir / "fonts");
-    candidates.push_back(exeDir / ".." / "fonts");
-    for (const auto& c : candidates)
-        if (fs::exists(c / "ibm-plex-mono-latin-400-normal.woff2")) return c.string();
-    std::fprintf(stderr, "note: IBM Plex Mono not found; SVGs will use an installed monospace font\n");
-    return "";
 }
 
 bool writeFile(const fs::path& path, const std::string& text) {
@@ -83,7 +68,7 @@ void printReport(const AppState& s) {
     row("l=m=3, n=0", d.qnm33);
 }
 
-void writePaperFigures(const fs::path& dir, const std::string& fonts) {
+void writePaperFigures(const fs::path& dir) {
     auto baseline = [] {
         AppState s;
         applyPreset(s, "GW150914");
@@ -106,8 +91,8 @@ void writePaperFigures(const fs::path& dir, const std::string& fonts) {
     { AppState s = baseline(); s.massSolar = 150; figs.push_back({"fig6c_mass_150", s}); }
 
     for (const Fig& f : figs) {
-        writeFile(dir / (std::string(f.name) + "_full.svg"), renderApp(f.state, View::Full, fonts));
-        writeFile(dir / (std::string(f.name) + "_plot.svg"), renderApp(f.state, View::Plot, fonts));
+        writeFile(dir / (std::string(f.name) + "_full.svg"), renderApp(f.state, View::Full));
+        writeFile(dir / (std::string(f.name) + "_plot.svg"), renderApp(f.state, View::Plot));
         std::printf("wrote %s\n", (dir / f.name).string().c_str());
     }
     std::printf("\nFigure 5 mode table (Mf = 68.5, chi = 0.69):\n");
@@ -118,7 +103,7 @@ void writePaperFigures(const fs::path& dir, const std::string& fonts) {
 
 int main(int argc, char** argv) {
     AppState s;
-    std::string out = "kerr_ringdown.svg", paperDir, fontsArg, csv;
+    std::string out = "kerr_ringdown.svg", paperDir, csv;
     View view = View::Full;
     bool report = false;
 
@@ -151,16 +136,13 @@ int main(int argc, char** argv) {
         else if (a == "--snr") s.detectorSensitivity = std::stod(next());
         else if (a == "--zoom") s.zoom = std::stod(next());
         else if (a == "--seed") s.seed = static_cast<std::uint32_t>(std::stoul(next()));
-        else if (a == "--fonts") fontsArg = next();
         else if (a == "--report") report = true;
         else if (a == "--csv") csv = next();
         else { std::fprintf(stderr, "unknown option %s (try --help)\n", a.c_str()); return 2; }
     }
 
-    const std::string fonts = findFontDir(fontsArg, argv[0]);
-
     if (!paperDir.empty()) {
-        writePaperFigures(paperDir, fonts);
+        writePaperFigures(paperDir);
         return 0;
     }
     if (report) {
@@ -179,7 +161,7 @@ int main(int argc, char** argv) {
         std::printf("wrote %s (%zu samples)\n", csv.c_str(), d.strain.size());
         return 0;
     }
-    if (!writeFile(out, renderApp(s, view, fonts))) {
+    if (!writeFile(out, renderApp(s, view))) {
         std::fprintf(stderr, "could not write %s\n", out.c_str());
         return 1;
     }

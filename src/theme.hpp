@@ -17,5 +17,6 @@ inline constexpr const char* muted = "#3a5a72";
 inline constexpr const char* mutedText = "#4a7090";
 inline constexpr const char* text = "#c8dde8";
 inline constexpr const char* textBright = "#e8f4f8";
+inline constexpr const char* white = "#ffffff";
 
 }  // namespace kerr::theme

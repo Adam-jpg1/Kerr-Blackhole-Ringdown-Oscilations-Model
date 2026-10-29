@@ -30,9 +30,6 @@ kerr_ringdown --csv waveform.csv
 kerr_ringdown --help
 ```
 
-`--paper` writes the figures from the results section. The `fonts` folder needs to
-be next to the executable (cmake copies it).
+`--paper` writes the figures from the results section.
 
 Baseline (68.5 solar masses, spin 0.69): f = 250.36 Hz, tau = 4.126 ms, Q = 3.2451.
-
-Font: IBM Plex Mono, SIL Open Font License (see fonts/).

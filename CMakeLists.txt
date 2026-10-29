@@ -22,6 +22,3 @@ else()
   target_compile_options(kerr_ringdown PRIVATE -Wall -Wextra)
 endif()
 
-# Copy the fonts next to the executable so the SVGs embed IBM Plex Mono.
-add_custom_command(TARGET kerr_ringdown POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/fonts $<TARGET_FILE_DIR:kerr_ringdown>/fonts)
